@@ -30,7 +30,7 @@ const AppContextProvider = ({ children }) => {
 
     const getDoctorsData = async () => {
         try {
-            const { data } = await axios.post(`${backendUrl}/api/doctors/list`);
+            const { data } = await axios.get(`${backendUrl}/api/doctors/list`);
             if (data.success) {
                 setDoctors(data.doctors);
             } else {
