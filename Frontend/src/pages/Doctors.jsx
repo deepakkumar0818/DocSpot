@@ -13,7 +13,21 @@ const Doctors = () => {
 
   const applyFilter = () => {
     if (speciality) {
-      const filtered = doctors.filter(doc => doc.speciality.toLowerCase() === speciality.toLowerCase());
+      // Decode URL-encoded speciality (for HashRouter compatibility)
+      const decodedSpeciality = decodeURIComponent(speciality).trim();
+      console.log('🔍 Filtering by speciality:', decodedSpeciality);
+      console.log('📋 Available doctors:', doctors.map(d => d.speciality));
+      
+      const filtered = doctors.filter(doc => {
+        const docSpeciality = (doc.speciality || '').trim();
+        const match = docSpeciality.toLowerCase() === decodedSpeciality.toLowerCase();
+        if (match) {
+          console.log(`✅ Match found: ${doc.name} - ${doc.speciality}`);
+        }
+        return match;
+      });
+      
+      console.log(`📊 Filter result: ${filtered.length} doctors found for "${decodedSpeciality}"`);
       console.log("Filtered Doctors:", filtered);
       setFilterdoc(filtered);
     } else {

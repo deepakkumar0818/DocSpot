@@ -26,27 +26,41 @@ const connectDB = async () => {
         // Get database name from environment, default to 'prescripto' if not specified
         const dbName = process.env.MONGODB_DB_NAME || 'prescripto';
         
-        // Check if URI already has a database name
-        const hasDbName = mongoURI.match(/\/[^/?]+(\?|$)/);
+        // Check if URI already has a database name before query params
+        // Pattern: checks for /databaseName? or /databaseName$ (end of string)
+        const hasDbNameBeforeQuery = mongoURI.match(/\.mongodb\.net\/[^/?]+(\?|$)/);
         
-        // Only add database name if it's not already in the URI and not using default 'test' database
-        if (!hasDbName || mongoURI.includes('/test')) {
-            // Handle different URI formats
+        // Only add database name if it's not already in the URI
+        if (!hasDbNameBeforeQuery) {
             if (mongoURI.includes('?')) {
-                // URI has query parameters
-                mongoURI = mongoURI.replace(/\/(\?|$)/, `/${dbName}$1`);
+                // URI has query parameters (like ?appName=Cluster0)
+                // Insert database name before the query string
+                mongoURI = mongoURI.replace(/\.mongodb\.net(\?)/, `.mongodb.net/${dbName}$1`);
+                console.log(`📝 Added database name "${dbName}" before query parameters`);
             } else if (mongoURI.endsWith('/')) {
                 // URI ends with /
                 mongoURI = mongoURI + dbName;
-            } else if (!mongoURI.includes('/')) {
-                // URI doesn't have database path (unlikely but possible)
-                mongoURI = mongoURI + '/' + dbName;
+                console.log(`📝 Added database name "${dbName}" to URI ending with /`);
+            } else if (!mongoURI.includes('.mongodb.net/')) {
+                // URI doesn't have database path after .mongodb.net
+                // Insert database name before query params or at the end
+                if (mongoURI.includes('?')) {
+                    mongoURI = mongoURI.replace('?', `/${dbName}?`);
+                } else {
+                    mongoURI = mongoURI + '/' + dbName;
+                }
+                console.log(`📝 Added database name "${dbName}" to URI`);
             } else {
-                // Replace test database if present
-                mongoURI = mongoURI.replace(/\/test(\?|$)/, `/${dbName}$1`);
+                // Has .mongodb.net/ but might be /test or empty, replace it
+                mongoURI = mongoURI.replace(/\.mongodb\.net\/[^/?]*(\?|$)/, `.mongodb.net/${dbName}$1`);
+                console.log(`📝 Replaced database in URI with "${dbName}"`);
             }
-            console.log(`📝 Using database name: ${dbName}`);
+        } else {
+            console.log(`✅ Database name already present in URI`);
         }
+        
+        console.log(`📝 Using database name: ${dbName}`);
+        console.log(`🔗 Final MongoDB URI (without credentials): ${mongoURI.replace(/\/\/[^@]+@/, '//***:***@')}`);
         
         console.log(`🔗 Connecting to MongoDB...`);
         await mongoose.connect(mongoURI);

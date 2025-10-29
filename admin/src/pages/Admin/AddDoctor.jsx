@@ -56,7 +56,7 @@ const AddDoctor = () => {
                 setExperience('1 year');
                 setFees('');
                 setAbout('');
-                setSpeciality('General Physician');
+                setSpeciality('General physician');
                 setDegree('');
                 setAddress1('');
                 setAddress2('');
@@ -132,7 +132,7 @@ const AddDoctor = () => {
               <option value="General physician">General Physician</option>
               <option value="Gynecologist">Gynecologist</option>
               <option value="Dermatologist">Dermatologist</option>
-              <option value="Pediatrician">Pediatrician</option>
+              <option value="Pediatricians">Pediatricians</option>
               <option value="Neurologist">Neurologist</option>
               <option value="Gastroenterologist">Gastroenterologist</option>
             </select>
