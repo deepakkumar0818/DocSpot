@@ -30,15 +30,32 @@ const AppContextProvider = ({ children }) => {
 
     const getDoctorsData = async () => {
         try {
+            console.log('🔄 Fetching doctors from:', `${backendUrl}/api/doctors/list`);
             const { data } = await axios.get(`${backendUrl}/api/doctors/list`);
+            console.log('📥 API Response:', data);
+            
             if (data.success) {
-                setDoctors(data.doctors);
+                console.log(`✅ Received ${data.doctors?.length || 0} doctors`);
+                if (data.debug) {
+                    console.log('🔍 Debug Info:', data.debug);
+                }
+                setDoctors(data.doctors || []);
+                
+                if (!data.doctors || data.doctors.length === 0) {
+                    console.warn('⚠️ No doctors returned from API');
+                }
             } else {
+                console.error('❌ API returned error:', data.message);
                 toast.error(data.message);
             }
         } catch (error) {
-            console.error(error);
-            toast.error(error.message);
+            console.error('❌ Error fetching doctors:', error);
+            console.error('Error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            toast.error(error.message || 'Failed to fetch doctors');
         }
     };
 

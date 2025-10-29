@@ -22,10 +22,28 @@ const changeAvaiability = async (req, res) => {
 
 const doctorList = async (req, res) => {
   try {
+    // Debug: Check database connection
+    const dbName = doctorModel.db.name;
+    const collectionName = doctorModel.collection.name;
+    console.log(`🔍 Querying database: ${dbName}, collection: ${collectionName}`);
+    
+    // Try to get total count first
+    const totalCount = await doctorModel.countDocuments({});
+    console.log(`📊 Total doctors in database: ${totalCount}`);
+    
     const doctors = await doctorModel.find({}).select(["-password", "-email"]);
-    res.json({ success: true, doctors });
+    console.log(`✅ Found ${doctors.length} doctors`);
+    
+    // If doctors array is empty but count > 0, there might be a selection issue
+    if (doctors.length === 0 && totalCount > 0) {
+      console.log('⚠️  No doctors returned but database has documents. Checking without select...');
+      const doctorsWithoutSelect = await doctorModel.find({});
+      console.log(`📋 Found ${doctorsWithoutSelect.length} doctors without select`);
+    }
+    
+    res.json({ success: true, doctors, debug: { dbName, collectionName, totalCount, returned: doctors.length } });
   } catch (error) {
-    console.error(error);
+    console.error('❌ Error in doctorList:', error);
     res.json({ success: false, message: error.message });
   }
 };

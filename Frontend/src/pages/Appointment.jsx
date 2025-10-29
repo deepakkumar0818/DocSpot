@@ -19,12 +19,37 @@ const Appointment = () => {
   const [slotTime, setSlotTime] = useState(null);
 
   const fetchdocInfo = async () => {
+    if (!doctors || doctors.length === 0) {
+      console.log('⚠️ No doctors available yet');
+      return;
+    }
+    
     const doctInfo = doctors.find(doc => doc._id === docId);
-    setDocInfo(doctInfo);
-    console.log(doctInfo);
+    
+    if (!doctInfo) {
+      console.error('❌ Doctor not found with ID:', docId);
+      toast.error('Doctor not found');
+      navigate('/doctors');
+      return;
+    }
+    
+    // Ensure slots_booked exists as an object
+    const docDataWithSlots = {
+      ...doctInfo,
+      slots_booked: doctInfo.slots_booked || {}
+    };
+    
+    setDocInfo(docDataWithSlots);
+    console.log('✅ Doctor info loaded:', docDataWithSlots);
   };
 
   const getAvailableSlots = async () => {
+    // Guard clause: Don't proceed if docInfo is not loaded
+    if (!docInfo) {
+      console.log('⚠️ docInfo is not loaded yet');
+      return;
+    }
+
     setDocSlot([]);  // Reset the slots before fetching new ones
     const today = new Date();
   
@@ -49,10 +74,10 @@ const Appointment = () => {
         const slotDate = `${day}-${month}-${year}`;
         const slotTime = formattedTime;
   
-        // Check if the slot is available
-        const isSlotAvailable = 
-          docInfo.slots_booked?.[slotDate] && 
-          docInfo.slots_booked[slotDate].includes(slotTime) ? false : true;
+        // Check if the slot is available - safely handle null/undefined slots_booked
+        const slotsBooked = docInfo.slots_booked || {};
+        const isSlotBooked = slotsBooked[slotDate] && slotsBooked[slotDate].includes(slotTime);
+        const isSlotAvailable = !isSlotBooked;
   
         if (isSlotAvailable) {
           timeSlots.push({
@@ -80,6 +105,12 @@ const Appointment = () => {
 
     if (!slotTime) {
       toast.warn("Please select a time slot.");
+      return;
+    }
+
+    // Safety check for docSlot
+    if (!docSlot || docSlot.length === 0 || !docSlot[slotIndex] || docSlot[slotIndex].length === 0) {
+      toast.error("No time slots available. Please refresh the page.");
       return;
     }
 
@@ -117,11 +148,16 @@ const Appointment = () => {
   };
 
   useEffect(() => {
-    fetchdocInfo();
+    if (doctors && doctors.length > 0) {
+      fetchdocInfo();
+    }
   }, [doctors, docId]);
 
   useEffect(() => {
-    getAvailableSlots();
+    // Only call getAvailableSlots when docInfo is loaded
+    if (docInfo) {
+      getAvailableSlots();
+    }
   }, [docInfo]);
 
   useEffect(() => {

@@ -2,6 +2,13 @@ import React from "react";
 import { assets } from "../assets/assets";
 
 const Header = () => {
+  const scrollToSpeciality = () => {
+    const specialitySection = document.getElementById('speciality');
+    if (specialitySection) {
+      specialitySection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row flex-wrap bg-primary rounded-lg px-6 md:px-10 lg:px-20">
       {/* Left side of the header */}
@@ -18,9 +25,12 @@ const Header = () => {
             schedule your appointment hassle-free.
           </p>
         </div>
-        <a className="flex items-center gap-2 bg-white px-8 py-3 rounded-full text-gray-600 text-sm m-auto md:m-0 hover:scale-105 transition-all duration-300" href="#speciality">
+        <button 
+          onClick={scrollToSpeciality}
+          className="flex items-center gap-2 bg-white px-8 py-3 rounded-full text-gray-600 text-sm m-auto md:m-0 hover:scale-105 transition-all duration-300"
+        >
           Book Appointment <img className="w-3" src={assets.arrow_icon} alt="Arrow icon" />
-        </a>
+        </button>
       </div>
 
       {/* Right side of the header */}
