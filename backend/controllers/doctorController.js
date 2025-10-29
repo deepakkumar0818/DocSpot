@@ -25,26 +25,45 @@ const doctorList = async (req, res) => {
     // Debug: Check database connection
     const dbName = doctorModel.db.name;
     const collectionName = doctorModel.collection.name;
-    console.log(`🔍 Querying database: ${dbName}, collection: ${collectionName}`);
+    console.log(`🔍 [${new Date().toISOString()}] Querying database: ${dbName}, collection: ${collectionName}`);
     
     // Try to get total count first
     const totalCount = await doctorModel.countDocuments({});
     console.log(`📊 Total doctors in database: ${totalCount}`);
     
+    // Fetch doctors, excluding sensitive fields
     const doctors = await doctorModel.find({}).select(["-password", "-email"]);
     console.log(`✅ Found ${doctors.length} doctors`);
     
-    // If doctors array is empty but count > 0, there might be a selection issue
+    // If doctors array is empty but count > 0, try fetching without select to debug
     if (doctors.length === 0 && totalCount > 0) {
       console.log('⚠️  No doctors returned but database has documents. Checking without select...');
-      const doctorsWithoutSelect = await doctorModel.find({});
-      console.log(`📋 Found ${doctorsWithoutSelect.length} doctors without select`);
+      const doctorsWithoutSelect = await doctorModel.find({}).limit(5);
+      console.log(`📋 Found ${doctorsWithoutSelect.length} doctors without select (limited to 5)`);
+      if (doctorsWithoutSelect.length > 0) {
+        console.log('Sample doctor fields:', Object.keys(doctorsWithoutSelect[0].toObject()));
+      }
     }
     
-    res.json({ success: true, doctors, debug: { dbName, collectionName, totalCount, returned: doctors.length } });
+    // Always return success with doctors array (even if empty)
+    res.json({ 
+      success: true, 
+      doctors: doctors || [],
+      debug: { 
+        dbName, 
+        collectionName, 
+        totalCount, 
+        returned: doctors.length,
+        timestamp: new Date().toISOString()
+      } 
+    });
   } catch (error) {
     console.error('❌ Error in doctorList:', error);
-    res.json({ success: false, message: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message,
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

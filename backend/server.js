@@ -19,7 +19,24 @@ const port = process.env.PORT || 4000;
 //middlewares
 
 app.use(express.json());
-app.use(cors());
+
+// Configure CORS to allow all origins (for deployment)
+app.use(cors({
+    origin: '*', // Allow all origins - change this to specific domains in production if needed
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'token', 'atoken', 'dtoken'],
+    credentials: true
+}));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        message: 'Backend is running',
+        timestamp: new Date().toISOString()
+    });
+});
+
 connectDB();
 connectCloudinary();
 

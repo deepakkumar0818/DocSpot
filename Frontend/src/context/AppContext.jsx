@@ -7,13 +7,29 @@ export const AppContext = createContext();
 const AppContextProvider = ({ children }) => {
     const currencySymbol = "$";
     
-    // Get backend URL with fallback for development
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 
-                      (import.meta.env.DEV ? 'http://localhost:4000' : '');
+    // Get backend URL with proper fallback
+    // In production, VITE_BACKEND_URL MUST be set
+    // In development, fallback to localhost
+    let backendUrl = import.meta.env.VITE_BACKEND_URL;
     
-    // Log backend URL for debugging (only in development)
-    if (import.meta.env.DEV) {
-        console.log('🔗 Backend URL:', backendUrl || 'NOT SET - Using fallback');
+    if (!backendUrl) {
+        if (import.meta.env.DEV) {
+            // Development mode - use localhost
+            backendUrl = 'http://localhost:4000';
+            console.log('🔗 Development mode: Using localhost backend');
+        } else {
+            // Production mode - try to detect from window location or use a default
+            // Most hosting platforms will require you to set VITE_BACKEND_URL
+            const hostname = window.location.hostname;
+            
+            // If hosted on same domain, use relative path
+            // Otherwise, this will fail and show an error (which is correct)
+            backendUrl = '';
+            console.error('❌ VITE_BACKEND_URL is not set in production!');
+            console.error('Please set VITE_BACKEND_URL environment variable in your hosting platform.');
+        }
+    } else {
+        console.log('🔗 Backend URL configured:', backendUrl);
     }
 
     const [doctors, setDoctors] = useState([]);
@@ -36,12 +52,32 @@ const AppContextProvider = ({ children }) => {
         }
     };
 
+    const testBackendConnection = async () => {
+        if (!backendUrl) return false;
+        
+        try {
+            const response = await axios.get(`${backendUrl}/health`, { timeout: 5000 });
+            return response.data.status === 'ok';
+        } catch (error) {
+            console.error('❌ Backend health check failed:', error.message);
+            return false;
+        }
+    };
+
     const getDoctorsData = async () => {
         // Validate backend URL
         if (!backendUrl) {
             console.error('❌ Backend URL is not configured!');
-            console.error('Please set VITE_BACKEND_URL in your .env file');
-            toast.error('Backend URL not configured. Please check environment variables.');
+            console.error('Please set VITE_BACKEND_URL in your .env file or hosting platform environment variables');
+            toast.error('Backend URL not configured. Please set VITE_BACKEND_URL environment variable.');
+            return;
+        }
+
+        // Test backend connection first
+        const isBackendAvailable = await testBackendConnection();
+        if (!isBackendAvailable) {
+            console.error(`❌ Cannot reach backend at ${backendUrl}`);
+            toast.error(`Cannot connect to backend server. Please check if it's running at ${backendUrl}`);
             return;
         }
 
@@ -49,7 +85,7 @@ const AppContextProvider = ({ children }) => {
             const apiUrl = `${backendUrl}/api/doctors/list`;
             console.log('🔄 Fetching doctors from:', apiUrl);
             
-            const { data } = await axios.get(apiUrl);
+            const { data } = await axios.get(apiUrl, { timeout: 10000 });
             console.log('📥 API Response:', data);
             
             if (data.success) {
@@ -97,8 +133,14 @@ const AppContextProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        getDoctorsData();
-    }, []);
+        // Only fetch if backend URL is configured
+        if (backendUrl) {
+            getDoctorsData();
+        } else {
+            console.error('❌ Cannot fetch doctors: Backend URL not configured');
+            toast.error('Backend URL not configured. Please set VITE_BACKEND_URL environment variable.');
+        }
+    }, [backendUrl]);
 
     useEffect(() => {
         if (token) {
