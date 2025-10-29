@@ -9,7 +9,14 @@ export const DoctorContext  = createContext();
 
 const DoctorContextProvider = (props) => {
 
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    // Get backend URL with fallback for development
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 
+                      (import.meta.env.DEV ? 'http://localhost:4000' : '');
+    
+    // Log backend URL for debugging (only in development)
+    if (import.meta.env.DEV && !backendUrl) {
+        console.warn('⚠️ VITE_BACKEND_URL not set, using fallback: http://localhost:4000');
+    }
    
     const [dToken, setDtoken] = useState(localStorage.getItem('dToken') ? localStorage.getItem('dToken') : '');
 

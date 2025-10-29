@@ -11,7 +11,14 @@ const AdminContextProvider = (props) => {
     const [doctors, setDoctors] = useState([]);
     const  [appointments, setAppointments] = useState([]);
     const [dashData, setDashData] = useState(false);
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    // Get backend URL with fallback for development
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 
+                      (import.meta.env.DEV ? 'http://localhost:4000' : '');
+    
+    // Log backend URL for debugging (only in development)
+    if (import.meta.env.DEV && !backendUrl) {
+        console.warn('⚠️ VITE_BACKEND_URL not set, using fallback: http://localhost:4000');
+    }
 
     const getAllDoctors = async () => {
         try {

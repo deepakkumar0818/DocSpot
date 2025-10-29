@@ -14,41 +14,71 @@ const connectDB = async () => {
             console.error('❌ MongoDB connection error:', err.message);
         });
 
-        // Ensure database name is included in connection string
+        // Get MongoDB URI from environment
         let mongoURI = process.env.MONGODB_URI;
         
-        // If URI doesn't have a database name, add 'prescripto' as default
-        if (mongoURI && !mongoURI.includes('/prescripto') && !mongoURI.match(/\/[^/?]+(\?|$)/)) {
-            // Check if it ends with / or has query params
-            if (mongoURI.endsWith('/') || mongoURI.includes('?')) {
-                mongoURI = mongoURI.replace(/\/(\?|$)/, '/prescripto$1');
+        if (!mongoURI) {
+            console.error('❌ MONGODB_URI is not set in environment variables!');
+            console.log('\n⚠️  Please set MONGODB_URI in your .env file or environment variables');
+            process.exit(1);
+        }
+
+        // Get database name from environment, default to 'prescripto' if not specified
+        const dbName = process.env.MONGODB_DB_NAME || 'prescripto';
+        
+        // Check if URI already has a database name
+        const hasDbName = mongoURI.match(/\/[^/?]+(\?|$)/);
+        
+        // Only add database name if it's not already in the URI and not using default 'test' database
+        if (!hasDbName || mongoURI.includes('/test')) {
+            // Handle different URI formats
+            if (mongoURI.includes('?')) {
+                // URI has query parameters
+                mongoURI = mongoURI.replace(/\/(\?|$)/, `/${dbName}$1`);
+            } else if (mongoURI.endsWith('/')) {
+                // URI ends with /
+                mongoURI = mongoURI + dbName;
+            } else if (!mongoURI.includes('/')) {
+                // URI doesn't have database path (unlikely but possible)
+                mongoURI = mongoURI + '/' + dbName;
             } else {
-                mongoURI = mongoURI + '/prescripto';
+                // Replace test database if present
+                mongoURI = mongoURI.replace(/\/test(\?|$)/, `/${dbName}$1`);
             }
-            console.log(`📝 Added database name to connection string`);
+            console.log(`📝 Using database name: ${dbName}`);
         }
         
+        console.log(`🔗 Connecting to MongoDB...`);
         await mongoose.connect(mongoURI);
         
         // Log connection info
         const db = mongoose.connection.db;
-        console.log(`🔗 Connected to database: ${db.databaseName}`);
+        const connectedDbName = db.databaseName;
+        console.log(`✅ Connected to database: ${connectedDbName}`);
+        
+        // Verify we're using the expected database
+        if (connectedDbName !== dbName) {
+            console.log(`⚠️  Warning: Connected to "${connectedDbName}" but expected "${dbName}"`);
+            console.log(`   Check your MONGODB_URI and MONGODB_DB_NAME environment variables`);
+        }
         
         // List collections (async operation)
         try {
             const collections = await db.listCollections().toArray();
-            console.log(`📊 Available collections: ${collections.map(c => c.name).join(', ') || 'None'}`);
+            const collectionNames = collections.map(c => c.name);
+            console.log(`📊 Available collections (${collectionNames.length}): ${collectionNames.join(', ') || 'None'}`);
         } catch (err) {
             console.log(`📊 Could not list collections: ${err.message}`);
         }
         
     } catch (error) {
-        console.error('Failed to connect to MongoDB:', error.message);
+        console.error('❌ Failed to connect to MongoDB:', error.message);
         console.log('\n⚠️  MongoDB Connection Failed!');
-        console.log('Please check your .env file and ensure:');
-        console.log('1. MONGODB_URI is set correctly');
-        console.log('2. For MongoDB Atlas: username and password are correct');
-        console.log('3. For local MongoDB: MongoDB service is running\n');
+        console.log('Please check your environment variables:');
+        console.log('1. MONGODB_URI - Full MongoDB connection string');
+        console.log('2. MONGODB_DB_NAME - Database name (optional, defaults to "prescripto")');
+        console.log('\nFor MongoDB Atlas: Ensure username and password are correct');
+        console.log('For local MongoDB: Ensure MongoDB service is running\n');
         process.exit(1);
     }
 }
