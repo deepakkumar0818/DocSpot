@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const connectDB = async () => {
+    console.log("Connecting to MongoDB...");
+    console.log("hellos ",process.env.MONGODB_URI)
     try {
         mongoose.connection.on('connected', () => {
             console.log('MongoDB connected successfully');
@@ -10,7 +15,7 @@ const connectDB = async () => {
             console.error('MongoDB connection error:', err.message);
         });
 
-        await mongoose.connect(`${process.env.MONGODB_URI}/prescripto`, {
+        await mongoose.connect(`${process.env.MONGODB_URI}`, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
