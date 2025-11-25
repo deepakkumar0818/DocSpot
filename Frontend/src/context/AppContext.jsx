@@ -37,6 +37,11 @@ const AppContextProvider = ({ children }) => {
     const [userData, setUserData] = useState(false);
 
     const loadUserProfileData = async () => {
+        if (!token) {
+            setUserData(false);
+            return;
+        }
+
         try {
             const { data } = await axios.get(`${backendUrl}/api/users/get-profile`, {
                 headers: { token },
@@ -44,11 +49,28 @@ const AppContextProvider = ({ children }) => {
             if (data.success) {
                 setUserData(data.userData);
             } else {
+                // If token is invalid, clear it
+                if (data.message && (data.message.includes('Invalid') || data.message.includes('expired') || data.message.includes('Not authorized'))) {
+                    console.log('⚠️ Token invalid, clearing...');
+                    localStorage.removeItem('token');
+                    setToken(false);
+                    setUserData(false);
+                }
                 toast.error(data.message);
             }
         } catch (error) {
-            console.error(error);
-            toast.error(error.message);
+            console.error('Error loading user profile:', error);
+            // If it's an auth error, clear the token
+            if (error.response?.status === 401 || error.response?.data?.message?.includes('Invalid') || error.response?.data?.message?.includes('expired')) {
+                console.log('⚠️ Auth error, clearing token...');
+                localStorage.removeItem('token');
+                setToken(false);
+                setUserData(false);
+            }
+            // Don't show error toast for auth errors - user will be redirected to login
+            if (!error.response?.data?.message?.includes('Invalid') && !error.response?.data?.message?.includes('expired')) {
+                toast.error(error.message);
+            }
         }
     };
 
@@ -135,7 +157,7 @@ const AppContextProvider = ({ children }) => {
     useEffect(() => {
         // Only fetch if backend URL is configured
         if (backendUrl) {
-            getDoctorsData();
+        getDoctorsData();
         } else {
             console.error('❌ Cannot fetch doctors: Backend URL not configured');
             toast.error('Backend URL not configured. Please set VITE_BACKEND_URL environment variable.');

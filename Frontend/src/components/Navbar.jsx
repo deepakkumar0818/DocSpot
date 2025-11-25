@@ -1,96 +1,158 @@
-import React, { useContext } from "react";
-import { useState } from "react";
-import { assets } from "../assets/assets"; // Named import for the assets
-import { NavLink, useNavigate } from "react-router-dom"; // Correctly import useNavigate
-import App from '../App'
-import { AppContext } from "../context/AppContext";
+﻿import React, { useContext, useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
+import { assets } from '../assets/assets';
 
 const Navbar = () => {
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  const { token, setToken, userData } = useContext(AppContext);
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
 
-  const [showMenu, setShowMenu] = useState(false);
-  const{token, setToken, userData} = useContext(AppContext);
-  const logout = () => {
-      setToken(false);
-      localStorage.removeItem('token');
-  }
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(false);
+    navigate('/');
+    setIsMenuOpen(false);
+    setIsProfileDropdownOpen(false);
+  };
 
   return (
-    <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400">
-        <a href="/"> <img className="w-44 cursor-pointer" src={assets.logo} alt="picture" /></a>
-      
-      <ul className="hidden md:flex items-start gap-5 font-medium">
-        <NavLink to="/">
-          <li className="py-1">HOME</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink to="/doctors">
-          <li className="py-1">ALL DOCTORS</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink to="/about">
-          <li className="py-1">ABOUT</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink to="/contact">
-          <li className="py-1">CONTACT</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-      </ul>
-      <div className="flex items-center gap-4">
-        {
-            token  && userData? <div className="flex items-center gap-2 cursor-pointer group relative">
-            <img  className="w-8  rounded-full" src= {userData.image} alt="" />
-            <img src= {assets.dropdown_icon} alt="" />
-                
-
-                <div className="absolute pt-14  top-0 right-0 text-base font-medium text-gray-600 z-20 hidden group-hover:block ">
-                    <div className="min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4">
-                        <p   onClick = {() => navigate('/my-profile')} className="hover:text-black cursor-pointer ">My Profile</p>
-                        <p onClick={() => navigate('/my-appointments')} className="hover:text-black cursor-pointer ">My Appointments</p>
-                        <p onClick={logout} className="hover:text-black cursor-pointer ">Logout</p>
-                    </div>
-                </div>
-            </div>
-            : <button
-            onClick={() => navigate('/login')}
-            className="bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block"
-          >
-            Create Account
-          </button>
-        }
-        
-        <img  className='w-8 md:hidden' onClick={()=> setShowMenu(true)} src={assets.menu_icon} alt="" />
-
-
-        {/* mobile menu */}
-
-        <div  className={`md:hidden right-0 top-0 bottom-0 z-20 overflow-hidden bg-white transition-transform duration-300 ${showMenu ? 'fixed translate-x-0 w-full' : 'fixed translate-x-full'}`}>
-          <div className="flex items-center justify-between px-5 py-6">
-            <img className="w-36" src= {assets.logo} alt="" />
-            <img  className="w-7" onClick={() => setShowMenu(false)} src= {assets.cross_icon} alt="" />
+    <nav className='flex items-center justify-between py-4 mb-4'>
+      <Link to='/' className='flex items-center gap-2'>
+        {assets.logo && <img src={assets.logo} alt='Logo' className='h-10' />}
+        <span className='text-2xl font-bold text-gray-800'>DocSpot</span>
+      </Link>
+      <div className='hidden md:flex items-center gap-6'>
+        <Link to='/' className='text-gray-600 hover:text-gray-900'>Home</Link>
+        <Link to='/doctors' className='text-gray-600 hover:text-gray-900'>Doctors</Link>
+        <Link to='/about' className='text-gray-600 hover:text-gray-900'>About</Link>
+        <Link to='/contact' className='text-gray-600 hover:text-gray-900'>Contact</Link>
+        {token ? (
+          <div className='relative' ref={profileDropdownRef}>
+            <button
+              onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+              className='flex items-center gap-2 focus:outline-none'
+            >
+              <div className='w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-primary transition-colors'>
+                {userData?.image ? (
+                  <img 
+                    src={userData.image} 
+                    alt="Profile" 
+                    className='w-full h-full object-cover'
+                  />
+                ) : (
+                  <img 
+                    src={assets.profile_pic} 
+                    alt="Profile" 
+                    className='w-full h-full object-cover'
+                  />
+                )}
+              </div>
+              {assets.dropdown_icon && (
+                <img 
+                  src={assets.dropdown_icon} 
+                  alt="Dropdown" 
+                  className={`w-4 h-4 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              )}
+            </button>
+            {isProfileDropdownOpen && (
+              <div className='absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50'>
+                <Link
+                  to='/my-profile'
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                  className='block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors'
+                >
+                  My Profile
+                </Link>
+                <Link
+                  to='/my-appointments'
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                  className='block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors'
+                >
+                  My Appointments
+                </Link>
+                <hr className='my-2 border-gray-200' />
+                <button
+                  onClick={handleLogout}
+                  className='block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors'
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
-          <ul className="flex flex-col items-center gap-2 px-5 mt-10 font-medium">
-          <NavLink onClick={()=>setShowMenu(false)} to="/">
-          <li className="py-1">HOME</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink onClick={()=>setShowMenu(false)} to="/doctors">
-          <li className="py-1">ALL DOCTORS</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink onClick={()=>setShowMenu(false)} to="/about">
-          <li className="py-1">ABOUT</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-        <NavLink onClick={()=>setShowMenu(false)} to="/contact">
-          <li className="py-1">CONTACT</li>
-          <hr className="border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden" />
-        </NavLink>
-          </ul>
-        </div>
+        ) : (
+          <Link to='/login' className='bg-blue-500 text-white px-6 py-2 rounded-full'>Login</Link>
+        )}
       </div>
-    </div>
+      <button onClick={() => setIsMenuOpen(!isMenuOpen)} className='md:hidden p-2'>
+        {assets.menu_icon && <img src={assets.menu_icon} alt='Menu' className='w-6 h-6' />}
+      </button>
+      {isMenuOpen && (
+        <div className='absolute top-16 left-0 right-0 bg-white border-t shadow-lg md:hidden z-50'>
+          <div className='flex flex-col p-4 gap-4'>
+            <Link to='/' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>Home</Link>
+            <Link to='/doctors' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>Doctors</Link>
+            <Link to='/about' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>About</Link>
+            <Link to='/contact' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>Contact</Link>
+            {token ? (
+              <>
+                <div className='flex items-center gap-3 py-2 border-t border-gray-200 pt-4'>
+                  <div className='w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300'>
+                    {userData?.image ? (
+                      <img 
+                        src={userData.image} 
+                        alt="Profile" 
+                        className='w-full h-full object-cover'
+                      />
+                    ) : (
+                      <img 
+                        src={assets.profile_pic} 
+                        alt="Profile" 
+                        className='w-full h-full object-cover'
+                      />
+                    )}
+                  </div>
+                  <div className='flex-1'>
+                    <p className='text-sm font-semibold text-gray-800'>
+                      {userData?.name || 'User'}
+                    </p>
+                    <p className='text-xs text-gray-500'>
+                      {userData?.email || ''}
+                    </p>
+                  </div>
+                </div>
+                <Link to='/my-profile' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>My Profile</Link>
+                <Link to='/my-appointments' onClick={() => setIsMenuOpen(false)} className='text-gray-600 hover:text-gray-900'>My Appointments</Link>
+                <button onClick={handleLogout} className='text-left text-red-600 hover:text-red-700'>Logout</button>
+              </>
+            ) : (
+              <Link to='/login' onClick={() => setIsMenuOpen(false)} className='bg-blue-500 text-white px-6 py-2 rounded-full text-center'>Login</Link>
+            )}
+          </div>
+        </div>
+      )}
+    </nav>
   );
 };
 

@@ -1,58 +1,70 @@
-import React from 'react'
+﻿import React from 'react'
+import { Link } from 'react-router-dom'
 import { assets } from '../assets/assets'
 
 const Footer = () => {
   return (
-    <div className='md:mx-10'>
-        
-   <div className='flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-40 text-sm'>
-    {/* left side */}
-<div>
-
-<img className='mb-5 w-40' src={assets.logo} alt="" />
-<p className='w-full md:w-2/3 text-gray-600 leading-6'>we are best for you sincce 2024 we are here to help with the best of the services and we a genrousity</p>
-  
-
-
-</div>
-{/* center  side*/}
-
-<div>
-<p className='text-xl font-medium mb-5'>Company</p>
-<ul className='flex flex-col gap-2 text-gray-600'>
-<li>Home</li>
-<li>about</li>
-<li>contact</li>
-<li>Privacy Policy</li>
-</ul>
-
-
-</div>
-
-{/* right side */}
-<div>
-<p  className='text-xl font-medium mb-5'>GET IN TOUCH</p>
-
-<ul className='flex flex-col gap-2 text-gray-600 ' >
-<li className=''>+91 7018318078</li>
-<li>deepakkumr2098@gmail.com</li>
-</ul>
-
-</div>
-
-
-
-         
-   </div>
- {/* copywrite text */}
-   <div >
-    <hr />
-    <p className='text-center text-gray-600 py-5 text-sm'>Copyright 2024@ Pescripto - All Rights Reserved.</p>
-
-   </div>
-
-
-    </div>
+    <footer className='mt-20 py-10 px-4 sm:px-10'>
+      <div className='max-w-7xl mx-auto'>
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-8 mb-8'>
+          <div className='col-span-1 md:col-span-2'>
+            <div className='flex items-center gap-2 mb-4'>
+              {assets.logo && (
+                <img src={assets.logo} alt="DocSpot Logo" className='h-8 w-auto' />
+              )}
+              <h3 className='text-2xl font-bold text-gray-800'>DocSpot</h3>
+            </div>
+            <p className='text-gray-600 text-sm mb-4'>
+              Your trusted partner in managing healthcare needs. Book appointments with verified doctors and manage your health records conveniently.
+            </p>
+          </div>
+          <div>
+            <h4 className='text-lg font-semibold mb-4 text-gray-800'>Quick Links</h4>
+            <ul className='space-y-2 text-sm'>
+              <li>
+                <Link to='/' className='text-gray-600 hover:text-gray-900 transition-colors'>
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to='/doctors' className='text-gray-600 hover:text-gray-900 transition-colors'>
+                  Find Doctors
+                </Link>
+              </li>
+              <li>
+                <Link to='/about' className='text-gray-600 hover:text-gray-900 transition-colors'>
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to='/contact' className='text-gray-600 hover:text-gray-900 transition-colors'>
+                  Contact
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className='text-lg font-semibold mb-4 text-gray-800'>Contact</h4>
+            <ul className='space-y-2 text-sm text-gray-600'>
+              <li>Email: deepakkumr2098@gmail.com</li>
+              <li>Phone: 7018318078</li>
+              <li>Location: Mohali, Punjab</li>
+            </ul>
+          </div>
+        </div>
+        <div className='border-t border-gray-300 pt-6 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-600'>
+          <p>&copy; {new Date().getFullYear()} DocSpot. All rights reserved.</p>
+          <div className='flex gap-4 mt-4 sm:mt-0'>
+            <Link to='/about' className='hover:text-gray-900 transition-colors'>
+              Privacy Policy
+            </Link>
+            <Link to='/contact' className='hover:text-gray-900 transition-colors'>
+              Terms of Service
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
   )
 }
 

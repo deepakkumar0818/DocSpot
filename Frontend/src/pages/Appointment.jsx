@@ -149,14 +149,14 @@ const Appointment = () => {
 
   useEffect(() => {
     if (doctors && doctors.length > 0) {
-      fetchdocInfo();
+    fetchdocInfo();
     }
   }, [doctors, docId]);
 
   useEffect(() => {
     // Only call getAvailableSlots when docInfo is loaded
     if (docInfo) {
-      getAvailableSlots();
+    getAvailableSlots();
     }
   }, [docInfo]);
 

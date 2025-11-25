@@ -15,6 +15,13 @@ import userRouter from './routes/userRoute.js';
 const app = express();
 const port = process.env.PORT || 4000;
 
+// Validate required environment variables
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is not set in environment variables!');
+  console.error('⚠️  Please set JWT_SECRET in your .env file');
+  console.error('   Example: JWT_SECRET=your_very_secure_secret_key_here');
+  process.exit(1);
+}
 
 //middlewares
 
