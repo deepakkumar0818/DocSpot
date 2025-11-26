@@ -38,8 +38,7 @@ const Navbar = () => {
   return (
     <nav className='flex items-center justify-between py-4 mb-4'>
       <Link to='/' className='flex items-center gap-2'>
-        {assets.logo && <img src={assets.logo} alt='Logo' className='h-10' />}
-        <span className='text-2xl font-bold text-gray-800'>DocSpot</span>
+        <img src="/docspot logo.png" alt='Logo' className='h-14 md:h-16' />
       </Link>
       <div className='hidden md:flex items-center gap-6'>
         <Link to='/' className='text-gray-600 hover:text-gray-900'>Home</Link>

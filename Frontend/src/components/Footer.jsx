@@ -1,6 +1,5 @@
 ﻿import React from 'react'
 import { Link } from 'react-router-dom'
-import { assets } from '../assets/assets'
 
 const Footer = () => {
   return (
@@ -9,10 +8,7 @@ const Footer = () => {
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8 mb-8'>
           <div className='col-span-1 md:col-span-2'>
             <div className='flex items-center gap-2 mb-4'>
-              {assets.logo && (
-                <img src={assets.logo} alt="DocSpot Logo" className='h-8 w-auto' />
-              )}
-              <h3 className='text-2xl font-bold text-gray-800'>DocSpot</h3>
+              <img src="/docspot logo.png" alt="DocSpot Logo" className='h-10 md:h-12 w-auto' />
             </div>
             <p className='text-gray-600 text-sm mb-4'>
               Your trusted partner in managing healthcare needs. Book appointments with verified doctors and manage your health records conveniently.

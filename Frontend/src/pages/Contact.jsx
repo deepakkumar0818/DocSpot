@@ -21,7 +21,7 @@ flex-col  justify-center items-start gap-6'>
   Mohali Punjab</p>
   <p className='text-gray-500'>Tel: 7018318078<br/>
   Email: deepakkumr2098@gmail.com, dk0133964@gmail.com</p>
-  <p className='font-semibold text-lg text-gray-500'>CAREERS AT PRESCRIPTO</p>
+  <p className='font-semibold text-lg text-gray-500'>CAREERS AT DOCSPOT</p>
   <p className='text-gray-500'>Learn more about our teams and job openings.</p>
   <button className='px-8 py-4  border border border-black hover:bg-black hover:text-white transition-all duration-300'>Explore Jobs</button>
 </div>
